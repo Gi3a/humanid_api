@@ -1,0 +1,13 @@
+
+# sh and bat
+*.bat
+
+# dependencies
+/.venv
+
+# system
+/known_faces
+/__pycache__
+
+# misc
+.DS_Store
