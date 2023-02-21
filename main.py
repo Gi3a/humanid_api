@@ -4,6 +4,7 @@ from pydantic import BaseModel
 import face_recognition
 import os
 import base64
+import urllib.request as ur
 
 
 app = FastAPI()
@@ -21,38 +22,39 @@ app.add_middleware(
 )
 
 
-def decode_base64_image(base64_string):
-    image_data = base64.b64decode(base64_string)
-    return image_data
+# def decode_base64_image(base64_string):
+#     image_data = base64.b64decode(base64_string)
+#     return image_data
 
 
 class Data(BaseModel):
-    image: bytes
+    image: str
 
 
 @app.post("/api/recognize_face")
 async def recognize_face(data: Data):
 
-    print(data.image)
+    # All Faces
+    known_faces_dir = "./known_faces"
+    known_faces = []
 
-    # known_faces_dir = "./known_faces"
-    # known_faces = []
+    # Base64 Image
+    decoded = ur.urlopen(data.image)
+    unknown_image = face_recognition.load_image_file(decoded)
+    unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
 
-    # for file in os.listdir(known_faces_dir):
-    #     image = face_recognition.load_image_file(
-    #         os.path.join(known_faces_dir, file))
-    # face_encoding = face_recognition.face_encodings(image)[0]
-    # known_faces.append(face_encoding)
+    for file in os.listdir(known_faces_dir):
+        image = face_recognition.load_image_file(
+            os.path.join(known_faces_dir, file))
+    face_encoding = face_recognition.face_encodings(image)[0]
+    known_faces.append(face_encoding)
 
     # image_bytes = base64.b64decode(data.image)
     # unknown_image = face_recognition.load_image_file(image_bytes)
-    # unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
 
-    # results = face_recognition.compare_faces(known_faces, unknown_encoding)
+    results = face_recognition.compare_faces(known_faces, unknown_encoding)
 
-    # if True in results:
-    #     return {"result": "Matched"}
-    # else:
-    #     return {"result": "Not Matched"}
-
-    return {"status": "success"}
+    if True in results:
+        return {"result": "Matched"}
+    else:
+        return {"result": "Not Matched"}
