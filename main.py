@@ -22,10 +22,6 @@ app.add_middleware(
 )
 
 
-class DataImage(BaseModel):
-    image: str
-
-
 class Data(BaseModel):
     first_name: str = ""
     last_name: str = ""
@@ -60,9 +56,11 @@ def create_person(conn, person):
 
 def find_person_by_encoding(conn, encoding):
     sql = ''' SELECT * FROM people '''
+
     cur = conn.cursor()
     cur.execute(sql)
     rows = cur.fetchall()
+
     for row in rows:
         face_encodings = eval(row[3])
         results = face_recognition.compare_faces([face_encodings], encoding)
@@ -79,43 +77,20 @@ def find_person_by_encoding(conn, encoding):
 @app.post("/api/recognize_face")
 async def recognize_face(data: Data):
 
-    # All Faces
-    known_faces_dir = "./known_faces"
-    known_faces = []
-
     # Base64 Image
     decoded = ur.urlopen(data.image)
     unknown_image = face_recognition.load_image_file(decoded)
     unknown_encoding = face_recognition.face_encodings(unknown_image)[0]
 
-    if len(unknown_encoding) == 0:
-        # Save to SQLite database with no name
-        conn = create_connection()
-        with conn:
-            person = ("", "", "")
-            create_person(conn, person)
-        return {"result": "Not Matched"}
-    else:
-        unknown_encoding = unknown_encoding[0]
+    conn = create_connection()
+    person = find_person_by_encoding(conn, unknown_encoding)
 
-    for file in os.listdir(known_faces_dir):
-        image = face_recognition.load_image_file(
-            os.path.join(known_faces_dir, file))
-        face_encoding = face_recognition.face_encodings(image)[0]
-        known_faces.append(face_encoding)
-
-    results = face_recognition.compare_faces(known_faces, unknown_encoding)
-
-    if True in results:
-        # Find and return matching person from SQLite database
-        conn = create_connection()
-        with conn:
-            person = find_person_by_encoding(conn, unknown_encoding)
-        return person
+    if person:
+        return {"person": person, "result": "match"}
     else:
         # Save to SQLite database with no name
         conn = create_connection()
         with conn:
             person = ("", "", str(unknown_encoding.tolist()))
             create_person(conn, person)
-        return {"result": "Not Matched"}
+    return {"result": "Not Matched"}
