@@ -4,10 +4,12 @@
 
 # dependencies
 /.venv
+.env
 
 # system
 /known_faces
 /__pycache__
+/*/__pycache__
 
 # misc
 .DS_Store
