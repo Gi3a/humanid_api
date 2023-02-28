@@ -1,6 +1,7 @@
 
 # sh and bat
 *.bat
+*.txt
 
 # dependencies
 /.venv
