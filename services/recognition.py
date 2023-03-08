@@ -20,8 +20,10 @@ class FaceRecognition:
         conn = await self.db_conn.create_connection()
         person = await self.find_person_by_encoding(conn, unknown_encoding)
 
-        if person:
-            return {"person": person, "result": "match"}
+        if person['passport_address'] == None:
+            return {"person": person, "result": "no_info"}
+        elif person['passport_address']:
+            return {"person": person, "result": "matched"}
         else:
             # Save to MySQL database with no name
             new_encoding = str(unknown_encoding.tolist())
@@ -31,7 +33,7 @@ class FaceRecognition:
             person = (passport_address, new_encoding)
 
             await self.create_person(conn, person)
-            return {"person": person, "result": "not match"}
+            return {"person": person, "result": "not_matched"}
 
     async def create_person(self, conn, person):
         sql = ''' INSERT INTO domains(passport_address, face_encodings)
