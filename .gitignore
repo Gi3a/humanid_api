@@ -1,0 +1,16 @@
+
+# sh and bat
+*.bat
+*.txt
+
+# dependencies
+/.venv
+.env
+/*/.env
+
+# system
+/__pycache__
+/*/__pycache__
+
+# misc
+.DS_Store
