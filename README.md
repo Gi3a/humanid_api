@@ -1,5 +1,7 @@
 # HumanID API on FastAPI
 
+## Implementing a Decentralized Identity Verification System Using Biometrics, Blockchain and Computer Vision
+
 ## Installation
 ```
 pip install -r ./requirements.txt
